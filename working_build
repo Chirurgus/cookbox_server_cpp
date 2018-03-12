@@ -1,0 +1,1 @@
+ g++ src/test.cpp -std=c++14 -I../sqlite_modern_cpp/hdr -Wall -lsqlite3 -pthread -lpistache -ldl -o test.exe
