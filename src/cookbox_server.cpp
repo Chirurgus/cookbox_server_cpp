@@ -24,7 +24,7 @@ public:
     }
 
     void start() {
-        _httpEndpoint->setHandler(router.handler());
+        _httpEndpoint->setHandler(_router.handler());
         _httpEndpoint->serve();
     }
 
@@ -83,10 +83,9 @@ int main(int argc, char *argv[]) {
     cout << "Cores = " << hardware_concurrency() << endl;
     cout << "Using " << thr << " threads" << endl;
 
-    StatsEndpoint stats(addr);
+    RecipeEndpoint server(addr,thr);
 
-    stats.init(thr);
-    stats.start();
+    server.start();
 
-    stats.shutdown();
+    server.shutdown();
 }

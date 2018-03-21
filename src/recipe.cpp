@@ -1,8 +1,12 @@
 #include <memory>
 
-#include "recipe.h"
+#include <recipe.h>
+
+using namespace sqlite_orm;
 
 namespace recipe {
+
+constexpr Recipe::id_type Recipe::no_id;// definition needed to avoid link errors
 
 const Recipe::string_type Recipe::recipe_tbl {"recipe"};
 const Recipe::string_type Recipe::id_col {"id"};
@@ -37,8 +41,9 @@ const Recipe::string_type Recipe::tag_tbl {"tag_list"};
 const Recipe::string_type Recipe::tag_tag_id {"tag_id"};
 const Recipe::string_type Recipe::tag_recipe_id {"recipe_id"};
 
+}// namespace recipe
 /*
-Recipe::Recipe(const json& j)
+recipe::Recipe::Recipe(const json& j)
 {
 	id = j[0];
 	name = j[1];
@@ -68,7 +73,7 @@ Recipe::Recipe(const json& j)
 	}
 }
 
-json Recipe::toJson() const
+json recipe::Recipe::toJson() const
 {
 	json j;
 	j["id"] = id;
@@ -86,7 +91,130 @@ json Recipe::toJson() const
 }
 */
 
-sqlite::database_binder operator<<(sqlite::database db, Recipe& r)
+recipe::RecipeDatabase::RecipeDatabase(const std::string& path_to_db)
+	: _database {std::make_shared<storage_type>(recipe::storage::get_storage("recipe.db"))}
+{
+}
+
+std::shared_ptr<typename recipe::RecipeDatabase::storage_type> recipe::RecipeDatabase::get_database()
+{
+	return _database;
+}
+
+recipe::Recipe recipe::RecipeDatabase::get(RecipeDatabase::id_type id)
+{
+	Recipe ret {get_database()->get<Recipe>(id)};
+	auto ingredients = get_database()->get_all<Recipe::Ingredient>(
+				where(c(&Recipe::Ingredient::recipe_id) == id)
+	);
+	for (const auto& i : ingredients) {
+		ret.ingredient_list.push_back(Recipe::Basic_ingredient {i});
+	}
+	auto instructions = get_database()->get_all<Recipe::Instruction>(
+				where(c(&Recipe::Instruction::recipe_id) == id),
+				order_by(&Recipe::Instruction::position)
+	);
+	for (const auto& i : instructions) {
+		ret.instruction_list.push_back(i.instruction);
+	}
+	auto comments = get_database()->get_all<Recipe::Comment>(
+				where(c(&Recipe::Comment::recipe_id) == id)
+	);
+	for (const auto& c : comments) {
+		ret.comment_list.push_back(c.comment);
+	}
+	return ret;
+}
+
+typename recipe::RecipeDatabase::id_type recipe::RecipeDatabase::put(const Recipe& recipe)
+{
+	if (get_database()->count<Recipe>(where(c(&Recipe::id) == recipe.id)) == 0) {
+		return insert(recipe);	
+	}
+	else {
+		update(recipe);
+		return recipe.id;
+	}
+}
+typename recipe::RecipeDatabase::id_type recipe::RecipeDatabase::insert(Recipe recipe)
+{
+	auto transaction_guard {get_database()->transaction_guard()};
+
+	Recipe::id_type id {get_database()->insert(recipe)};
+
+	transaction_guard.commit();
+
+	recipe.id = id;
+	update(recipe);
+
+	return recipe.id;
+}
+
+void recipe::RecipeDatabase::update(const Recipe& recipe)
+{
+	auto transaction_guard {get_database()->transaction_guard()};
+
+	get_database()->update(recipe);
+
+	get_database()->remove_all<Recipe::Ingredient>(
+		where(c(&Recipe::Ingredient::recipe_id) == recipe.id)
+	);
+	for (const auto& ing : recipe.ingredient_list) {
+		Recipe::Ingredient i {};
+		i.recipe_id = recipe.id;
+		i.quantity = ing.quantity;
+		i.description = ing.description;
+		i.other_recipe = ing.other_recipe;
+
+		get_database()->insert(i);
+	}
+
+	get_database()->remove_all<Recipe::Instruction>(
+		where(c(&Recipe::Instruction::recipe_id) == recipe.id)
+	);
+	for (std::vector<std::string>::size_type i {0};
+		i < recipe.instruction_list.size();
+		++i)
+	{
+		get_database()->insert(
+			Recipe::Instruction {recipe.id,i,recipe.instruction_list[i]}
+		);
+	}
+
+	get_database()->remove_all<Recipe::Comment>(
+		where(c(&Recipe::Comment::recipe_id) == recipe.id)
+	);
+	for (const auto& cmnt : recipe.comment_list) {
+		get_database()->insert(
+			Recipe::Comment {recipe.id, cmnt}
+		);
+	}
+
+	transaction_guard.commit();//->rollback() is called in destructor if an exception is thrown
+}
+
+void recipe::RecipeDatabase::remove(id_type id)
+{
+	auto transaction_guard {get_database()->transaction_guard()};
+
+	get_database()->remove_all<Recipe::Ingredient>(
+		where(c(&Recipe::Ingredient::recipe_id) == id)
+	);
+	get_database()->remove_all<Recipe::Instruction>(
+		where(c(&Recipe::Instruction::recipe_id) == id)
+	);
+	get_database()->remove_all<Recipe::Comment>(
+		where(c(&Recipe::Comment::recipe_id) == id)
+	);
+	get_database()->remove_all<Recipe>(
+		where(c(&Recipe::id) == id)
+	);
+
+	transaction_guard.commit();// rollback() is called in destructor if an exception is thrown
+}
+
+/*
+sqlite::database_binder recipe::operator<<(sqlite::database& db, Recipe& r)
 {
 	sqlite::database_binder ret {db << "begin;"};
 	try {
@@ -124,11 +252,11 @@ sqlite::database_binder operator<<(sqlite::database db, Recipe& r)
 		r.id = db.last_insert_rowid();
 	}
 	
-	db << "delete from ingredient_list where id = ?;"
+	db << "delete from " + Recipe::ing_tbl + " where id = ?;"
 	   << r.id;
 	
 	for (auto i : r.ingredient_list) {
-		db << "insert into ingredient_list values(?,?,?,?);"
+		db << "insert into " + Recipe::ing_tbl + " values(?,?,?,?);"
 		   << r.id
 		   << i.quantity
 		   << i.description
@@ -138,19 +266,19 @@ sqlite::database_binder operator<<(sqlite::database db, Recipe& r)
 			);
 	}
 
-	db << "delete from instruction_list where id = ?;"
+	db << "delete from " + Recipe::ins_tbl + " where id = ?;"
 	   << r.id;
 	for (std::vector<Recipe>::size_type i {0}; i < r.instruction_list.size(); ++i) {
-		db << "insert into instruction_list values(?,?,?)"
+		db << "insert into " + Recipe::ins_tbl + " values(?,?,?)"
 		   << r.id
 		   << i
 		   << r.instruction_list[i];
 	}
 
-	db << "delete from comment_list where id = ?;"
+	db << "delete from " + Recipe::cmnt_tbl + " where id = ?;"
 	   << r.id;
 	for (auto i : r.comment_list) {
-		db << "insert into comment_list values(?,?)"
+		db << "insert into " + Recipe::cmnt_tbl + " values(?,?)"
 		   << r.id
 		   << i;
 	}	
@@ -160,8 +288,8 @@ sqlite::database_binder operator<<(sqlite::database db, Recipe& r)
 	catch (sqlite::sqlite_exception& e) {
 		//log it somewhere
 		db << "rollback;";
+		throw;
 	}
 	return ret;
 }
-
-}// namespace recipe
+*/
