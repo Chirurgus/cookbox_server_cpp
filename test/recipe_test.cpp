@@ -1,3 +1,5 @@
+#include <memory>
+
 #include <recipe.h>
 #include <gtest/gtest.h>
 
@@ -88,7 +90,7 @@ TEST_F(RecipeTest,OpenSqliteAndSyncSchema) {
 	db.get_database()->sync_schema();
 }
 
-TEST_F(RecipeTest,SyncSqliteSchemav4) {
+TEST_F(RecipeTest,CheckSchemaCompatibleWithDbv4) {
 	using namespace sqlite_orm;
 	recipe::RecipeDatabase db {db_v4_location};
 	auto changes {db.get_database()->sync_schema_simulate()};
@@ -104,7 +106,7 @@ TEST_F(RecipeTest,SyncSqliteSchemav4) {
 TEST_F(RecipeTest,WriteRToSqlite) {
 	using namespace sqlite_orm;
 	recipe::RecipeDatabase db {db_location};
-	//db.get_database()->sync_schema();
+	db.get_database()->sync_schema();
 
 	db.put(r);
 	EXPECT_NE(r.id,Recipe::no_id);
@@ -113,7 +115,7 @@ TEST_F(RecipeTest,WriteRToSqlite) {
 TEST_F(RecipeTest,WriteNoIdToSqlite) {
 	using namespace sqlite_orm;
 	recipe::RecipeDatabase db {db_location};
-	//db.get_database()->sync_schema();
+	db.get_database()->sync_schema();
 
 	no_id_r.id = db.put(no_id_r);
 	EXPECT_NE(no_id_r.id,Recipe::no_id);
@@ -122,7 +124,7 @@ TEST_F(RecipeTest,WriteNoIdToSqlite) {
 TEST_F(RecipeTest,WriteLongToSqlite) {
 	using namespace sqlite_orm;
 	recipe::RecipeDatabase db {db_location};
-	//db.get_database()->sync_schema();
+	db.get_database()->sync_schema();
 
 	db.put(long_r);
 	EXPECT_NE(long_r.id,Recipe::no_id);
@@ -131,7 +133,7 @@ TEST_F(RecipeTest,WriteLongToSqlite) {
 TEST_F(RecipeTest,WriteBasicToSqlite) {
 	using namespace sqlite_orm;
 	recipe::RecipeDatabase db {db_location};
-	//db.get_database()->sync_schema();
+	db.get_database()->sync_schema();
 
 	db.put(basic_r);
 	EXPECT_NE(basic_r.id,Recipe::no_id);
@@ -140,7 +142,7 @@ TEST_F(RecipeTest,WriteBasicToSqlite) {
 TEST_F(RecipeTest,WriteEmptyToSqlite) {
 	using namespace sqlite_orm;
 	recipe::RecipeDatabase db {db_location};
-	//db.get_database()->sync_schema();
+	db.get_database()->sync_schema();
 
 	empty_r.id = db.put(empty_r);
 	EXPECT_NE(empty_r.id,Recipe::no_id);
@@ -149,7 +151,7 @@ TEST_F(RecipeTest,WriteEmptyToSqlite) {
 TEST_F(RecipeTest,WriteNoIngToSqlite) {
 	using namespace sqlite_orm;
 	recipe::RecipeDatabase db {db_location};
-	//db.get_database()->sync_schema();
+	db.get_database()->sync_schema();
 	
 	db.put(no_ing_r);
 	EXPECT_NE(no_ing_r.id,Recipe::no_id);
@@ -158,7 +160,7 @@ TEST_F(RecipeTest,WriteNoIngToSqlite) {
 TEST_F(RecipeTest,WriteNoInsToSqlite) {
 	using namespace sqlite_orm;
 	recipe::RecipeDatabase db {db_location};
-	//db.get_database()->sync_schema();
+	db.get_database()->sync_schema();
 
 	db.put(no_ing_r);
 	EXPECT_NE(no_ins_r.id,Recipe::no_id);
@@ -167,10 +169,93 @@ TEST_F(RecipeTest,WriteNoInsToSqlite) {
 TEST_F(RecipeTest,WriteNoCmntToSqlite) {
 	using namespace sqlite_orm;
 	recipe::RecipeDatabase db {db_location};
-	//db.get_database()->sync_schema();
+	db.get_database()->sync_schema();
 
 	db.put(no_cmnt_r);
 	EXPECT_NE(no_ins_r.id,Recipe::no_id);
+}
+
+TEST_F(RecipeTest,ForeignKeyConstraintIngredient) {
+	using namespace sqlite_orm;
+	recipe::RecipeDatabase db {db_location};
+	db.get_database()->sync_schema();
+
+	db.put(r);
+
+	Recipe::Ingredient ing{};
+	ing.recipe_id = r.id;
+	ing.quantity = 100;
+	ing.description = "g of foreign keys";
+	ing.other_recipe = nullptr;
+
+	// should work
+	db.get_database()->insert(ing);
+	
+	bool constraint_triggered {false};
+	try {
+		ing.recipe_id = r.id - 1;
+		//should trigger foreign key constraint
+		db.get_database()->insert(ing);
+	}
+	catch (...) {
+		constraint_triggered = true;
+	}
+	 
+	ASSERT_TRUE(constraint_triggered);
+}
+
+TEST_F(RecipeTest,ForeignKeyConstraintIngredientOther) {
+	using namespace sqlite_orm;
+	recipe::RecipeDatabase db {db_location};
+	db.get_database()->sync_schema();
+
+	db.put(r);
+	db.put(long_r);
+	
+	Recipe::Ingredient ing{};
+	ing.recipe_id = r.id;
+	ing.quantity = 100;
+	ing.description = "g of foreign keys";
+	ing.other_recipe = std::make_shared<int>(long_r.id);
+
+	// should work
+	db.get_database()->insert(ing);
+	
+	bool constraint_triggered {false};
+	try {
+		ing.other_recipe = std::make_shared<int>(long_r.id -1);
+		//should trigger foreign key constraint
+		db.get_database()->insert(ing);
+	}
+	catch (...) {
+		constraint_triggered = true;
+	}
+	 
+	ASSERT_TRUE(constraint_triggered);
+}
+
+
+TEST_F(RecipeTest,ForeignKeyConstraintInstruction) {
+	using namespace sqlite_orm;
+	recipe::RecipeDatabase db {db_location};
+	db.get_database()->sync_schema();
+
+	db.put(r);
+
+	// should work
+	db.get_database()->insert(Recipe::Instruction {r.id, 100,  "g of foreign keys"});
+	
+	bool constraint_triggered {false};
+	try {
+		//should trigger foreign key constraint
+		db.get_database()->insert(Recipe::Instruction {r.id - 1, 100,  "g of foreign keys"});
+	}
+	catch (...) {
+		constraint_triggered = true;
+	}
+	 
+	ASSERT_TRUE(constraint_triggered);
+
 }
 
 }// namespace
