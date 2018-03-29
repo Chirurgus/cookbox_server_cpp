@@ -16,7 +16,7 @@ find_package(Pistache CONFIG REQUIRED)
 
 #add_subdirectory(test/googletest)
 
-add_executable(cookbox_server.exe ${SRC_DIR}/cookbox_server.cpp ${SRC_DIR}/recipe.cpp)
+add_executable(cookbox_server.exe ${SRC_DIR}/cookbox_server.cpp ${SRC_DIR}/recipe.cpp ${SRC_DIR}/recipe_storage.cpp)
 set_target_properties(cookbox_server.exe PROPERTIES
 					CXX_STANDARD 14
 					CXX_STANDARD_REQUIRED ON)
@@ -27,7 +27,7 @@ target_link_libraries(cookbox_server.exe pistache sqlite3)
 enable_testing()
 find_package(GTest REQUIRED)
 
-add_executable(test.exe ${TEST_DIR}/recipe_test.cpp ${SRC_DIR}/recipe.cpp)
+add_executable(test.exe ${TEST_DIR}/recipe_test.cpp ${SRC_DIR}/recipe.cpp ${SRC_DIR}/recipe_storage.cpp)
 
 set_target_properties(test.exe PROPERTIES
 				CXX_STANDARD 14
