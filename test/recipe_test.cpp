@@ -46,7 +46,7 @@ protected:
 	std::string db_v4_location {"test_recipe_v4.db"};
 
 private:
-	Recipe::id_type default_id {std::numeric_limits<Recipe::id_type>::max()};
+	Recipe::id_type default_id {Recipe::no_id};
 };// class RecipeTest
 
 bool recipe_compare(const Recipe& r1, const Recipe& r2)
@@ -143,7 +143,7 @@ TEST_F(RecipeTest,WriteRecipeSqlite) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
-	db.put(r);
+	r.id = db.put(r);
 	EXPECT_NE(r.id,Recipe::no_id);
 }
 
@@ -163,9 +163,8 @@ TEST_F(RecipeTest,WriteLongSqlite) {
 	db.get_database()->sync_schema();
 
 	Recipe long_r {r};
-	long_r.id = r.id - 1;
 
-	db.put(long_r);
+	long_r.id = db.put(long_r);
 	EXPECT_NE(long_r.id,Recipe::no_id);
 }
 
@@ -174,12 +173,12 @@ TEST_F(RecipeTest,WriteBasicSqlite) {
 	db.get_database()->sync_schema();
 	
 	Recipe basic_r {r};
-	basic_r.id = r.id - 1;
+
 	basic_r.ingredient_list.clear();
 	basic_r.instruction_list.clear();
 	basic_r.comment_list.clear();
 
-	db.put(basic_r);
+	basic_r.id = db.put(basic_r);
 	EXPECT_NE(basic_r.id,Recipe::no_id);
 }
 	
@@ -198,10 +197,9 @@ TEST_F(RecipeTest,WriteNoIngredientsSqlite) {
 	db.get_database()->sync_schema();
 	
 	Recipe no_ing_r {r};
-	no_ing_r.id = r.id - 1;
 	no_ing_r.ingredient_list.clear();
 
-	db.put(no_ing_r);
+	no_ing_r.id = db.put(no_ing_r);
 	EXPECT_NE(no_ing_r.id,Recipe::no_id);
 }
 
@@ -210,10 +208,9 @@ TEST_F(RecipeTest,WriteNoInstructionsSqlite) {
 	db.get_database()->sync_schema();
 
 	Recipe no_ins_r {r};
-	no_ins_r.id = r.id - 1;
 	no_ins_r.instruction_list.clear();
 
-	db.put(no_ins_r);
+	no_ins_r.id = db.put(no_ins_r);
 	EXPECT_NE(no_ins_r.id,Recipe::no_id);
 }
 
@@ -222,10 +219,9 @@ TEST_F(RecipeTest,WriteNoCommentsSqlite) {
 	db.get_database()->sync_schema();
 
 	Recipe no_cmnt_r {r};
-	no_cmnt_r.id = r.id - 1;
 	no_cmnt_r.comment_list.clear();
 
-	db.put(no_cmnt_r);
+	no_cmnt_r.id = db.put(no_cmnt_r);
 	EXPECT_NE(no_cmnt_r.id,Recipe::no_id);
 }
 
@@ -237,7 +233,7 @@ TEST_F(RecipeTest,ReadRecipeSqlite) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
-	db.put(r);
+	r.id = db.put(r);
 	ASSERT_NE(r.id,Recipe::no_id);
 	
 	Recipe r1 {db.get(r.id)};
@@ -264,9 +260,8 @@ TEST_F(RecipeTest,ReadLongSqlite) {
 	db.get_database()->sync_schema();
 
 	Recipe long_r {r};
-	long_r.id = r.id - 1;
 
-	db.put(long_r);
+	long_r.id = db.put(long_r);
 	EXPECT_NE(long_r.id,Recipe::no_id);
 	
 	Recipe r1 {db.get(long_r.id)};
@@ -278,12 +273,11 @@ TEST_F(RecipeTest,ReadBasicSqlite) {
 	db.get_database()->sync_schema();
 	
 	Recipe basic_r {r};
-	basic_r.id = r.id - 1;
 	basic_r.ingredient_list.clear();
 	basic_r.instruction_list.clear();
 	basic_r.comment_list.clear();
 
-	db.put(basic_r);
+	basic_r.id = db.put(basic_r);
 	EXPECT_NE(basic_r.id,Recipe::no_id);
 
 	Recipe r1 {db.get(basic_r.id)};
@@ -308,10 +302,9 @@ TEST_F(RecipeTest,ReadNoIngredientsSqlite) {
 	db.get_database()->sync_schema();
 	
 	Recipe no_ing_r {r};
-	no_ing_r.id = r.id - 1;
 	no_ing_r.ingredient_list.clear();
 
-	db.put(no_ing_r);
+	no_ing_r.id = db.put(no_ing_r);
 	EXPECT_NE(no_ing_r.id,Recipe::no_id);
 
 	Recipe r1 {db.get(no_ing_r.id)};
@@ -323,10 +316,9 @@ TEST_F(RecipeTest,ReadNoInstructionsSqlite) {
 	db.get_database()->sync_schema();
 
 	Recipe no_ins_r {r};
-	no_ins_r.id = r.id - 1;
 	no_ins_r.instruction_list.clear();
 
-	db.put(no_ins_r);
+	no_ins_r.id = db.put(no_ins_r);
 	EXPECT_NE(no_ins_r.id,Recipe::no_id);
 
 	Recipe r1 {db.get(no_ins_r.id)};
@@ -338,10 +330,9 @@ TEST_F(RecipeTest,ReadNoCommentsSqlite) {
 	db.get_database()->sync_schema();
 
 	Recipe no_cmnt_r {r};
-	no_cmnt_r.id = r.id - 1;
 	no_cmnt_r.comment_list.clear();
 
-	db.put(no_cmnt_r);
+	no_cmnt_r.id = db.put(no_cmnt_r);
 	EXPECT_NE(no_cmnt_r.id,Recipe::no_id);
 
 	Recipe r1 {db.get(no_cmnt_r.id)};
@@ -368,13 +359,14 @@ TEST_F(RecipeTest,InsertIngredient) {
 	db.get_database()->sync_schema();
 	
 	r.ingredient_list.clear();
-	db.put(r);
+	r.id = db.put(r);
 
-	storage::Db_ingredient i1 {};
-	i1.recipe_id = r.id;
-        i1.quantity = 10;
-       	i1.description = "hello";
-	i1.other_recipe = nullptr;
+	storage::Db_ingredient i1 {
+		r.id,
+		10,
+		"hello",
+		nullptr
+	};
 
 	db.get_database()->insert(i1);
 	auto i_list {db.get_database()->get_all<storage::Db_ingredient>(
@@ -397,7 +389,7 @@ TEST_F(RecipeTest,InsertInstruction) {
 	db.get_database()->sync_schema();
 	
 	r.instruction_list.clear();
-	db.put(r);
+	r.id = db.put(r);
 
 	storage::Db_instruction i1 {r.id, 1, "hello"};
 
@@ -418,7 +410,7 @@ TEST_F(RecipeTest,ForeignKeyConstraintIngredient) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
-	db.put(r);
+	r.id = db.put(r);
 
 	storage::Db_ingredient ing{
 		r.id,
@@ -432,7 +424,7 @@ TEST_F(RecipeTest,ForeignKeyConstraintIngredient) {
 	
 	bool constraint_triggered {false};
 	try {
-		ing.recipe_id = r.id - 1;
+		ing.recipe_id = r.id + 1;
 		//should trigger foreign key constraint
 		db.get_database()->insert(ing);
 	}
@@ -448,11 +440,9 @@ TEST_F(RecipeTest,ForeignKeyConstraintIngredientOther) {
 	db.get_database()->sync_schema();
 
 	Recipe other_r {r};
-	other_r.id = r.id -1;
 
-	db.put(r);
-	db.put(other_r);
-	
+	r.id = db.put(r);
+	other_r.id = db.put(other_r);
 
 	storage::Db_ingredient ing {
 		r.id,
@@ -466,7 +456,7 @@ TEST_F(RecipeTest,ForeignKeyConstraintIngredientOther) {
 	
 	bool constraint_triggered {false};
 	try {
-		ing.other_recipe = std::make_shared<int>(other_r.id -1);
+		ing.other_recipe = std::make_shared<int>(other_r.id + 1);
 		//should trigger foreign key constraint
 		db.get_database()->insert(ing);
 	}
@@ -482,7 +472,7 @@ TEST_F(RecipeTest,ForeignKeyConstraintInstruction) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
-	db.put(r);
+	r.id = db.put(r);
 
 	storage::Db_instruction ins {r.id, 100,  "g of foreign keys"};
 
@@ -491,7 +481,7 @@ TEST_F(RecipeTest,ForeignKeyConstraintInstruction) {
 	
 	bool constraint_triggered {false};
 	try {
-		ins.recipe_id = r.id - 1;
+		ins.recipe_id = r.id + 1;
 
 		//should trigger foreign key constraint
 		db.get_database()->insert(ins);
