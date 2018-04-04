@@ -109,25 +109,29 @@ typename storage::RecipeDatabase::id_type
 {
 	using namespace sqlite_orm;
 
+	auto transaction_guard {get_database()->transaction_guard()};
+	
+	int ret;
 	if (get_database()->
 		count<Db_recipe>(where(c(&Db_recipe::id) == recipe.id)) == 0
 	   )
 	{
-		return insert(recipe);	
+		ret = insert(recipe);	
 	}
 	else {
 		update(recipe);
-		return recipe.id;
+		ret = recipe.id;
 	}
+
+	transaction_guard.commit();// rollback() is called if an exception is thrown
+	return ret;
 }
+
 typename storage::RecipeDatabase::id_type
 	storage::RecipeDatabase::insert(recipe::Recipe recipe)
 {
-	auto transaction_guard {get_database()->transaction_guard()};
-	
 	const Recipe::id_type id {get_database()->insert(Db_recipe {recipe})};
 
-	transaction_guard.commit();
 
 	recipe.id = id;
 	update(recipe);
@@ -138,8 +142,6 @@ typename storage::RecipeDatabase::id_type
 void storage::RecipeDatabase::update(const recipe::Recipe& recipe)
 {
 	using namespace sqlite_orm;
-
-	auto transaction_guard {get_database()->transaction_guard()};
 	
 	get_database()->update(Db_recipe {recipe});
 
@@ -147,11 +149,12 @@ void storage::RecipeDatabase::update(const recipe::Recipe& recipe)
 		where(c(&Db_ingredient::recipe_id) == recipe.id)
 	);
 	for (const auto& i : recipe.ingredient_list) {
-		Db_ingredient ing {};
-		ing.recipe_id = recipe.id;
-		ing.quantity = i.quantity;
-		ing.description = i.description;
-		ing.other_recipe = i.other_recipe;
+		Db_ingredient ing {
+			recipe.id,
+			i.quantity,
+			i.description,
+			i.other_recipe
+		};
 
 		get_database()->insert(ing);
 	}
@@ -176,8 +179,6 @@ void storage::RecipeDatabase::update(const recipe::Recipe& recipe)
 			Db_comment {recipe.id, cmnt}
 		);
 	}
-
-	transaction_guard.commit();//->rollback() is called in destructor if an exception is thrown
 }
 
 void storage::RecipeDatabase::remove(id_type id)
