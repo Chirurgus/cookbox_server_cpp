@@ -12,9 +12,9 @@ namespace {
 using Recipe = ::recipe::Recipe;
 using RecipeDatabase = ::storage::RecipeDatabase;
 
-class RecipeTest : public ::testing::Test {
+class RecipeStorageTest : public ::testing::Test {
 protected:
-	RecipeTest()
+	RecipeStorageTest()
 		: r {default_id,
 			"Test recipe",
 			"An easy one, to test your program",
@@ -38,7 +38,7 @@ protected:
 	{
 	}
 	
-	virtual ~RecipeTest() { }
+	virtual ~RecipeStorageTest() { }
 	
 	Recipe r ;
 
@@ -47,7 +47,7 @@ protected:
 
 private:
 	Recipe::id_type default_id {Recipe::no_id};
-};// class RecipeTest
+};// class RecipeStorageTest
 
 bool recipe_compare(const Recipe& r1, const Recipe& r2)
 {
@@ -115,16 +115,16 @@ bool recipe_compare(const Recipe& r1, const Recipe& r2)
 }
 
 
-TEST_F(RecipeTest,OpenSqlite) {
+TEST_F(RecipeStorageTest,Open) {
 	RecipeDatabase db {db_location};
 }
 
-TEST_F(RecipeTest,OpenSqliteAndSyncSchema) {
+TEST_F(RecipeStorageTest,OpenAndSyncSchema) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 }
 
-TEST_F(RecipeTest,CheckSchemaCompatibleWithSqlitev4) {
+TEST_F(RecipeStorageTest,CheckSchemaCompatibleWithv4) {
 	RecipeDatabase db {db_v4_location};
 	auto changes {db.get_database()->sync_schema_simulate()};
 
@@ -139,7 +139,7 @@ TEST_F(RecipeTest,CheckSchemaCompatibleWithSqlitev4) {
 	EXPECT_EQ(changes[Rdh::tag_list_tbl],sync_schema_result::already_in_sync);	
 }
 	
-TEST_F(RecipeTest,WriteRecipeSqlite) {
+TEST_F(RecipeStorageTest,WriteRecipe) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
@@ -147,7 +147,7 @@ TEST_F(RecipeTest,WriteRecipeSqlite) {
 	EXPECT_NE(r.id,Recipe::no_id);
 }
 
-TEST_F(RecipeTest,WriteNoIdSqlite) {
+TEST_F(RecipeStorageTest,WriteNoId) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 	
@@ -158,7 +158,7 @@ TEST_F(RecipeTest,WriteNoIdSqlite) {
 	EXPECT_NE(no_id_r.id,Recipe::no_id);
 }
 
-TEST_F(RecipeTest,WriteLongSqlite) {
+TEST_F(RecipeStorageTest,WriteLong) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
@@ -168,7 +168,7 @@ TEST_F(RecipeTest,WriteLongSqlite) {
 	EXPECT_NE(long_r.id,Recipe::no_id);
 }
 
-TEST_F(RecipeTest,WriteBasicSqlite) {
+TEST_F(RecipeStorageTest,WriteBasic) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 	
@@ -182,7 +182,7 @@ TEST_F(RecipeTest,WriteBasicSqlite) {
 	EXPECT_NE(basic_r.id,Recipe::no_id);
 }
 	
-TEST_F(RecipeTest,WriteEmptySqlite) {
+TEST_F(RecipeStorageTest,WriteEmpty) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 	
@@ -192,7 +192,7 @@ TEST_F(RecipeTest,WriteEmptySqlite) {
 	EXPECT_NE(empty_r.id,Recipe::no_id);
 }
 
-TEST_F(RecipeTest,WriteNoIngredientsSqlite) {
+TEST_F(RecipeStorageTest,WriteNoIngredients) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 	
@@ -203,7 +203,7 @@ TEST_F(RecipeTest,WriteNoIngredientsSqlite) {
 	EXPECT_NE(no_ing_r.id,Recipe::no_id);
 }
 
-TEST_F(RecipeTest,WriteNoInstructionsSqlite) {
+TEST_F(RecipeStorageTest,WriteNoInstructions) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
@@ -214,7 +214,7 @@ TEST_F(RecipeTest,WriteNoInstructionsSqlite) {
 	EXPECT_NE(no_ins_r.id,Recipe::no_id);
 }
 
-TEST_F(RecipeTest,WriteNoCommentsSqlite) {
+TEST_F(RecipeStorageTest,WriteNoComments) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
@@ -225,11 +225,11 @@ TEST_F(RecipeTest,WriteNoCommentsSqlite) {
 	EXPECT_NE(no_cmnt_r.id,Recipe::no_id);
 }
 
-TEST_F(RecipeTest,RecipeCompare) {
+TEST_F(RecipeStorageTest,RecipeCompare) {
 	ASSERT_TRUE(recipe_compare(r,r));
 }	
 
-TEST_F(RecipeTest,ReadRecipeSqlite) {
+TEST_F(RecipeStorageTest,ReadRecipe) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
@@ -241,7 +241,7 @@ TEST_F(RecipeTest,ReadRecipeSqlite) {
 	ASSERT_TRUE(recipe_compare(r1,r));
 }
 	
-TEST_F(RecipeTest,ReadNoIdSqlite) {
+TEST_F(RecipeStorageTest,ReadNoId) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 	
@@ -255,7 +255,7 @@ TEST_F(RecipeTest,ReadNoIdSqlite) {
 	ASSERT_TRUE(recipe_compare(r1, no_id_r));
 }
 
-TEST_F(RecipeTest,ReadLongSqlite) {
+TEST_F(RecipeStorageTest,ReadLong) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
@@ -268,7 +268,7 @@ TEST_F(RecipeTest,ReadLongSqlite) {
 	ASSERT_TRUE(recipe_compare(r1, long_r));
 }
 
-TEST_F(RecipeTest,ReadBasicSqlite) {
+TEST_F(RecipeStorageTest,ReadBasic) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 	
@@ -284,7 +284,7 @@ TEST_F(RecipeTest,ReadBasicSqlite) {
 	ASSERT_TRUE(recipe_compare(r1, basic_r));
 }
 	
-TEST_F(RecipeTest,ReadEmptySqlite) {
+TEST_F(RecipeStorageTest,ReadEmpty) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 	
@@ -297,7 +297,7 @@ TEST_F(RecipeTest,ReadEmptySqlite) {
 	ASSERT_TRUE(recipe_compare(r1, empty_r));
 }
 
-TEST_F(RecipeTest,ReadNoIngredientsSqlite) {
+TEST_F(RecipeStorageTest,ReadNoIngredients) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 	
@@ -311,7 +311,7 @@ TEST_F(RecipeTest,ReadNoIngredientsSqlite) {
 	ASSERT_TRUE(recipe_compare(r1, no_ing_r));
 }
 
-TEST_F(RecipeTest,ReadNoInstructionsSqlite) {
+TEST_F(RecipeStorageTest,ReadNoInstructions) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
@@ -325,7 +325,7 @@ TEST_F(RecipeTest,ReadNoInstructionsSqlite) {
 	ASSERT_TRUE(recipe_compare(r1, no_ins_r));
 }
 
-TEST_F(RecipeTest,ReadNoCommentsSqlite) {
+TEST_F(RecipeStorageTest,ReadNoComments) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
@@ -339,7 +339,7 @@ TEST_F(RecipeTest,ReadNoCommentsSqlite) {
 	ASSERT_TRUE(recipe_compare(r1, no_cmnt_r));
 }
 
-TEST_F(RecipeTest,InsertJustRecipe) {
+TEST_F(RecipeStorageTest,InsertJustRecipe) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 	
@@ -353,7 +353,7 @@ TEST_F(RecipeTest,InsertJustRecipe) {
 	ASSERT_TRUE(recipe_compare(r1.toRecipe(),r2.toRecipe()));	
 }
 
-TEST_F(RecipeTest,InsertIngredient) {
+TEST_F(RecipeStorageTest,InsertIngredient) {
 	using namespace sqlite_orm;
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
@@ -383,7 +383,7 @@ TEST_F(RecipeTest,InsertIngredient) {
 	EXPECT_EQ(i1.other_recipe,i2.other_recipe);
 }
 
-TEST_F(RecipeTest,InsertInstruction) {
+TEST_F(RecipeStorageTest,InsertInstruction) {
 	using namespace sqlite_orm;	
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
@@ -406,7 +406,7 @@ TEST_F(RecipeTest,InsertInstruction) {
 	EXPECT_EQ(i1.instruction,i2.instruction);
 }
 
-TEST_F(RecipeTest,ForeignKeyConstraintIngredient) {
+TEST_F(RecipeStorageTest,ForeignKeyConstraintIngredient) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
@@ -435,7 +435,7 @@ TEST_F(RecipeTest,ForeignKeyConstraintIngredient) {
 	ASSERT_TRUE(constraint_triggered);
 }
 
-TEST_F(RecipeTest,ForeignKeyConstraintIngredientOther) {
+TEST_F(RecipeStorageTest,ForeignKeyConstraintIngredientOther) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
@@ -468,7 +468,7 @@ TEST_F(RecipeTest,ForeignKeyConstraintIngredientOther) {
 }
 
 
-TEST_F(RecipeTest,ForeignKeyConstraintInstruction) {
+TEST_F(RecipeStorageTest,ForeignKeyConstraintInstruction) {
 	RecipeDatabase db {db_location};
 	db.get_database()->sync_schema();
 
