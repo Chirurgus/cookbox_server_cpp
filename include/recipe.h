@@ -2,15 +2,17 @@
 #define GUARD_COOKBOX_SERVER_RECIPE_H
 
 #include <exception>
+#include <string>
+#include <vector>
 
-#include <nlohmann/json.hpp>
+#include <cpprest/json.h>
 
 namespace recipe {
 
-using json = nlohmann::json;
 
 struct Recipe {
 	using id_type = int;
+	using json = web::json::value;
 
 	static constexpr id_type no_id {-1};
 	
@@ -24,12 +26,10 @@ struct Recipe {
 		// inherit constructors
 		using std::runtime_error::runtime_error;
 	};
-/*
-	Recipe() {}
+	Recipe() = default;
 	Recipe(const json& j);
 
 	json toJson() const;
-*/
 
 	id_type id {no_id};
 	std::string name;

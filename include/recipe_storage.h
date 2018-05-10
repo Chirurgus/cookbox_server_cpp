@@ -1,3 +1,9 @@
+/*
+ * Created by Alexander Sorochynskyi
+ * on 6/04/18
+ *
+ */
+
 #ifndef GUARD_COOKBOX_SERVER_RECIPE_STORAGE_H
 #define GUARD_COOKBOX_SERVER_RECIPE_STORAGE_H
 
@@ -204,18 +210,33 @@ public:
 
 	RecipeDatabase(const std::string& path_to_db);
 	
-	std::shared_ptr<storage_type> get_database();
-
+	
 	// CRUD interface
 	Recipe get(id_type id);
 	id_type put(const Recipe& recipe);
 	void remove(id_type id);
+	std::vector<id_type> ids();
+
+	//not private for tests, TODO
+	std::shared_ptr<storage_type> get_database();
 
 private:
+	template<class Err>
+	struct RecipeDatabase_error : public Err {
+		RecipeDatabase_error(const Err& e)
+			: Err {e} {}
+	};
+
 	id_type insert(Recipe recipe);
 	void update(const Recipe& recipe);
 
 	std::shared_ptr<storage_type> _database;
+public:
+	// Thrown if piece of data isn't found
+	using Not_found_error = RecipeDatabase_error<std::system_error>;
+
+	// Thrown in all other cases
+	using Database_error = RecipeDatabase_error<std::runtime_error>;
 };// class RecipeDatabase
 
 }//namespace storage

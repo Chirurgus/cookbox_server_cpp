@@ -1,26 +1,26 @@
+/* 
+ * Created by Alexander Sorochynskyi
+ * On 2/05/2018
+ */
+
+#include <iostream>
 
 #include <recipe_server.h>
 
-int main(int argc, char *argv[]) {
-    Port port(9080);
+int main(int argc, char *argv[]) try {
 
-    int thr = 2;
+	const std::string addr = "http://localhost";
 
-    if (argc >= 2) {
-        port = std::stol(argv[1]);
 
-        if (argc == 3)
-            thr = std::stol(argv[2]);
-    }
+    server::RecipeHandler server(addr,"");
 
-    Address addr(Ipv4::any(), port);
+	server.start().then([addr]() {
+		std::cout << "Cookbox server started\n"
+			"listtening at: " << addr << std::endl;
+	});
 
-    cout << "Cores = " << hardware_concurrency() << endl;
-    cout << "Using " << thr << " threads" << endl;
-
-    RecipeEndpoint server(addr,thr);
-
-    server.start();
-
-    server.shutdown();
+	return 0;
+}
+catch (std::runtime_error& e) {
+	std::cout << e.what() << std::endl;
 }

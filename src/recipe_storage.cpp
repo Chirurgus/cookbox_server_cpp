@@ -1,3 +1,9 @@
+/*
+ * Created by Alexander Sorochynskyi
+ * on 6/04/18
+ *
+ */
+
 #include <recipe_storage.h>
 
 namespace storage {
@@ -77,7 +83,7 @@ std::shared_ptr<typename storage::RecipeDatabase::storage_type>
 	return _database;
 }
 
-recipe::Recipe storage::RecipeDatabase::get(RecipeDatabase::id_type id)
+recipe::Recipe storage::RecipeDatabase::get(RecipeDatabase::id_type id) try
 {
 	using namespace sqlite_orm;
 
@@ -102,10 +108,17 @@ recipe::Recipe storage::RecipeDatabase::get(RecipeDatabase::id_type id)
 		ret.comment_list.push_back(c.comment);
 	}
 	return ret;
+
+}
+catch (std::system_error& e) {
+	throw Not_found_error {e};
+}
+catch (std::runtime_error& e) {
+	throw Database_error {e};
 }
 
 typename storage::RecipeDatabase::id_type
-	storage::RecipeDatabase::put(const recipe::Recipe& recipe)
+	storage::RecipeDatabase::put(const recipe::Recipe& recipe) try
 {
 	using namespace sqlite_orm;
 
@@ -125,6 +138,8 @@ typename storage::RecipeDatabase::id_type
 
 	transaction_guard.commit();// rollback() is called if an exception is thrown
 	return ret;
+} catch (std::runtime_error& e) {
+	throw Database_error {e};
 }
 
 typename storage::RecipeDatabase::id_type
@@ -181,7 +196,7 @@ void storage::RecipeDatabase::update(const recipe::Recipe& recipe)
 	}
 }
 
-void storage::RecipeDatabase::remove(id_type id)
+void storage::RecipeDatabase::remove(id_type id) try
 {
 	using namespace sqlite_orm;
 
@@ -201,6 +216,25 @@ void storage::RecipeDatabase::remove(id_type id)
 	);
 
 	transaction_guard.commit();// rollback() is called in destructor if an exception is thrown
+} catch (std::runtime_error& e) {
+	throw Database_error {e};
 }
+
+
+std::vector<typename storage::RecipeDatabase::id_type> storage::RecipeDatabase::ids()
+try {
+	using namespace sqlite_orm;
+	
+	std::vector<id_type> ret {};
+	for (auto& r : get_database()->iterate<Db_recipe>()) {
+		ret.push_back(r.id);
+	}	
+
+	return ret;
+}
+catch (std::runtime_error& e) {
+	throw Database_error {e};
+}
+
 
 
