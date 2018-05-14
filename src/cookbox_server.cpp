@@ -19,6 +19,8 @@ int main(int argc, char *argv[]) try {
 			"listtening at: " << addr << std::endl;
 	});
 
+	while(true) {}
+
 	return 0;
 }
 catch (std::runtime_error& e) {

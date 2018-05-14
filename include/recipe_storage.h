@@ -215,7 +215,7 @@ public:
 	Recipe get(id_type id);
 	id_type put(const Recipe& recipe);
 	void remove(id_type id);
-	std::vector<id_type> ids();
+	//std::vector<id_type> ids();
 
 	//not private for tests, TODO
 	std::shared_ptr<storage_type> get_database();

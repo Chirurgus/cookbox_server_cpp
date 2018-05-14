@@ -46,19 +46,16 @@ const RecipeDatabaseHelper::string_type RecipeDatabaseHelper::tag_recipe_id {"re
 
 recipe::Recipe storage::Db_recipe::toRecipe() const
 {
-	return recipe::Recipe {
-		id,
-		name,
-		short_description,
-		long_description,
-		target_quantity,
-		target_description,
-		preparation_time,
-		source,
-		{},
-		{},
-		{}
-	};
+	recipe::Recipe r{};
+	r.id = id;
+	r.name = name;
+	r.short_description = short_description;
+	r.long_description = long_description;
+	r.target_quantity = target_quantity;
+	r.target_description = target_description;
+	r.preparation_time = preparation_time;
+	r.source = source;
+	return r;
 }
 
 recipe::Recipe::Ingredient storage::Db_ingredient::toIngredient() const
@@ -75,6 +72,7 @@ constexpr storage::RecipeDatabaseHelper::id_type storage::RecipeDatabaseHelper::
 storage::RecipeDatabase::RecipeDatabase(const std::string& path_to_db)
 	: _database {std::make_shared<storage_type>(storage::get_storage(path_to_db))}
 {
+	get_database()->sync_schema();
 }
 
 std::shared_ptr<typename storage::RecipeDatabase::storage_type>
@@ -220,7 +218,7 @@ void storage::RecipeDatabase::remove(id_type id) try
 	throw Database_error {e};
 }
 
-
+/*
 std::vector<typename storage::RecipeDatabase::id_type> storage::RecipeDatabase::ids()
 try {
 	using namespace sqlite_orm;
@@ -235,6 +233,7 @@ try {
 catch (std::runtime_error& e) {
 	throw Database_error {e};
 }
+*/
 
 
 

@@ -11,30 +11,29 @@
 #include <recipe.h> 
 
 struct RecipeTestBase : public ::testing::Test{
-	RecipeTestBase()
-		: r {recipe::Recipe::no_id,
-			"Test recipe",
-			"An easy one, to test your program",
-			"Every since the good ol' 18' that I'm using this recipe to test my recipe programs.",
-			3.14f,
-			"g. of skill to get this working.",
-			2,
-			"Yours one and only Alexander",
-			{ {10, "Years C++ experience ;)", nullptr}, 
+	RecipeTestBase() {
+		r.id = recipe::Recipe::no_id;
+		r.name = "Test recipe";
+		r.short_description = "An easy one, to test your program";
+		r.long_description = "Every since the good ol' 18' that I'm using this recipe to test my recipe programs.";
+		r.tartget_quantity = 3.14f;
+		r.target_description = "g. of skill to get this working.";
+		r.preparation_time = 2;
+		r.source = "Yours one and only Alexander";
+		r.ingredient_list = std::vector<recipe::Recipe::Ingredient>{{10, "Years C++ experience ;)", nullptr},
 			  {3, "Years in university", nullptr},
 			  {50, "ish hours of your time", nullptr},
 			  {1000, "motivations to do this", nullptr},
-			  {5, "annoyances with not having a way to stock recipes",nullptr}},
-			{ "Be anoyed with the way you oganaized recipes",
+			  {5, "annoyances with not having a way to stock recipes",nullptr}};
+		r.instruction_list = std::vector<std::string>{"Be anoyed with the way you oganaized recipes",
 			  "Lean Java + Android",
 			  "Want same thing on your PC",
-			  "Want to sync data" },
-			{ "Dont' hesitate a a little cinamon (on your system)",
-			  "Goes best with coffe and marshmellows" }
-		   }
-		{}
+			  "Want to sync data"};
+		r.comment_list = std::vector<std::string>{"Dont' hesitate to add a little cinamon (on your system)",
+			  "Goes best with coffe and marshmellows"};
+	}
 	virtual ~RecipeTestBase() {}
-	const recipe::Recipe r;
+	recipe::Recipe r;
 };
 
 bool recipe_compare(const recipe::Recipe& r1, const recipe::Recipe& r2)
