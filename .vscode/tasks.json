@@ -10,6 +10,22 @@
                 "cwd": "${workspaceRoot}/build"
             },
             "command": "/usr/bin/cmake -G \"UNIX Makefiles\" ${workspaceRoot}",
-        }
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "CMake with g++",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceRoot}/build"
+            },
+            "command": "cmake .. -DCMAKE_CXX_COMPILER=g++, -G 'Unix Makefiles'",
+            "group": {
+              "kind": "build",
+              "isDefault": true
+            }
+          }     
     ]
 }

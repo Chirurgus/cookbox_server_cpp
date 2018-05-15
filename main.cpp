@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include <recipe.h>
 #include <recipe_server.h>
 
 int main(int argc, char *argv[]) try {

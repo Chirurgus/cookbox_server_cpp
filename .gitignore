@@ -14,7 +14,7 @@ x64
 *.xcodeproj
 *.xcworkspace
 *.exe
-build
+build*
 CMakeCache.txt
 CMakeFiles
 CMakeScripts

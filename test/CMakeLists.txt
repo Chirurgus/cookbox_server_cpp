@@ -1,13 +1,13 @@
-project(cookbox_server VERSION 0.1.0 LANGUAGES CXX)
+# Created by Alexander Sorochynskyi
+# On 15/05/18
 
-enable_testing()
+cmake_minimum_required(VERSION 3.5.1)
+
+add_executable(cb_test test.cpp)
+
 find_package(GTest REQUIRED)
 
-add_executable(test.exe ${TEST_DIR}/test.cpp ${SRC_DIR}/recipe.cpp ${SRC_DIR}/recipe_storage.cpp)
 
-gtest_add_tests(test.exe SOURCES recipe_test.cpp storage_test.cpp)
-set_target_properties(test.exe PROPERTIES
-				CXX_STANDARD 14
-				CXX_STANDARD_REQUIRED ON)
-target_compile_options(test.exe PRIVATE -Wall)
-target_link_libraries(test.exe ${cpprestsdk_LINK_LIBRARIES} sqlite3 ${GTEST_BOTH_LIBRARIES})
+set_target_properties(cb_test PROPERTIES CXX_STANDARD 14)
+target_compile_options(cb_test PRIVATE -Wall)
+target_link_libraries(cb_test recipe_server ${GTEST_BOTH_LIBRARIES})
