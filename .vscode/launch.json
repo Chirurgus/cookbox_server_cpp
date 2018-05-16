@@ -5,34 +5,28 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "C++ Launch",
+            "name": "debug server",
             "type": "cppdbg",
             "request": "launch",
-            "program": "/mnt/c/Documents/Projects/cookbox_server/build/cookbox_server.exe",
-            "args": ["-fThreading"],
+            "program": "${workspaceFolder}/cb_server",
+            "args": [],
             "stopAtEntry": false,
-            "cwd": "/mnt/c/Documents/Projects/cookbox_server",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": true,
-            "windows": {
-                "MIMode": "gdb",
-                "setupCommands": [
-                    {
-                        "description": "Enable pretty-printing for gdb",
-                        "text": "-enable-pretty-printing",
-                        "ignoreFailures": true
-                    }
-                ]
-            },
             "pipeTransport": {
-                "pipeCwd": "",
-                "pipeProgram": "c:\\windows\\sysnative\\bash.exe",
+                "debuggerPath": "/usr/bin/gdb",
+                "pipeProgram": "${env:windir}\\system32\\bash.exe",
                 "pipeArgs": ["-c"],
-                "debuggerPath": "/usr/bin/gdb"
+                "pipeCwd": ""
             },
-            "sourceFileMap": {
-                "/mnt/c": "c:\\"
-            }
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }

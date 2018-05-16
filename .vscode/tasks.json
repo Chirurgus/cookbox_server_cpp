@@ -1,31 +1,58 @@
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
+    
+    // this setting has to be changed to use WSL
+    // "terminal.integrated.shell.windows": "C:\\WINDOWS\\System32\\bash.exe",
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "cmake",
+            "label": "build",
             "type": "shell",
             "options": {
                 "cwd": "${workspaceRoot}/build"
             },
-            "command": "/usr/bin/cmake -G \"UNIX Makefiles\" ${workspaceRoot}",
+            "command": "cmake ..",
             "group": {
                 "kind": "build",
                 "isDefault": true
             }
         },
         {
-            "label": "CMake with g++",
+            "label": "make",
             "type": "shell",
             "options": {
                 "cwd": "${workspaceRoot}/build"
             },
-            "command": "cmake .. -DCMAKE_CXX_COMPILER=g++, -G 'Unix Makefiles'",
+            "command": "make -j2",
             "group": {
-              "kind": "build",
-              "isDefault": true
-            }
-          }     
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "run_server",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceRoot}/build"
+            },
+            "command": "./cb_server",
+        },
+        {
+            "label": "run_test",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceRoot}/build"
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "command": "./test/cb_test",
+        }
+
     ]
 }

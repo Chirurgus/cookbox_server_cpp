@@ -8,7 +8,6 @@
 
 #include <cpprest/base_uri.h>
 
-// cmake can't find these, it should get thos from target cookbox_server
 #include <recipe.h>
 #include <recipe_storage.h>
 
