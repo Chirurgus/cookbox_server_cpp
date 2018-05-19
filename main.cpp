@@ -4,12 +4,40 @@
  */
 
 #include <iostream>
+#include <memory>
 
 #include <recipe.h>
 #include <recipe_server.h>
 
-int main(int argc, char *argv[]) try {
+#include <cpprest/http_client.h>
+#include <cpprest/uri_builder.h>
 
+#include <cpprest/http_client.h>
+#include <cpprest/filestream.h>
+
+using namespace utility;                    // Common utilities like string conversions
+using namespace web;                        // Common features like URIs.
+using namespace web::http;                  // Common HTTP functionality
+using namespace web::http::client;          // HTTP client features
+using namespace concurrency::streams;       // Asynchronous streams
+
+int main(int argc, char* argv[]) {
+    experimental::listener::http_listener listener {U("http://localhost/recipe")};
+    listener.support(methods::GET, [](http_request r) {
+    std::cout << "REQUEST!";
+    r.reply(status_codes::OK);
+});
+    
+    listener.open()
+    .then([]() {
+        std::cout << "LISTENING!" << std::endl;
+    }).wait();
+
+    while(true) {};
+
+    return 0;
+}
+/*
 	const std::string addr = "http://localhost";
 
 
@@ -23,7 +51,4 @@ int main(int argc, char *argv[]) try {
 	while(true) {}
 
 	return 0;
-}
-catch (std::runtime_error& e) {
-	std::cout << e.what() << std::endl;
-}
+	*/

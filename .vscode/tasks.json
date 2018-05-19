@@ -16,7 +16,8 @@
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": []
         },
         {
             "label": "make",
@@ -40,6 +41,7 @@
                 "cwd": "${workspaceRoot}/build"
             },
             "command": "./cb_server",
+            "problemMatcher": []
         },
         {
             "label": "run_test",
@@ -51,8 +53,7 @@
                 "kind": "test",
                 "isDefault": true
             },
-            "command": "./test/cb_test",
+            "command": "./test/cb_test"
         }
-
     ]
 }
